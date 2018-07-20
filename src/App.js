@@ -5,6 +5,7 @@ import { ListGroup, ListGroupItem, Badge,Collapse, Navbar, NavbarToggler, Navbar
 import FaSortUp from 'react-icons/lib/fa/chevron-up'
 import Spotify from 'spotify-web-api-js'
 import Song from './Song.js'
+import firebase from 'firebase'
 
 class App extends Component {
   constructor(props) {
@@ -23,10 +24,14 @@ class App extends Component {
 
     this.timer = null;
     this.spotify = new Spotify()
-    this.spotify.setAccessToken('BQDePKBGvTEr8X7JLnVvbipS7OrYPSpltNiCbQ8HxU0UPQjyoenhpBsL6nh9wBw_vgfQRnXVDH-FEupEi8Nac2qfEuZyomni5IVD-5_aWMAuVsgbezTE8ki8NZwVkh1Q74AJb-TnTcjWYs3gj1102ZoHlIeAfVpilru4LlK5Yu5TMqsXKKwMwhY-Kpk2U68U35vyh72xNnLvvd8EG0SH_BSwEMcOhwD_BFpr6k0iK_Ia9pe5QLP5MWfQHHhxaupvMYjm6VXgBQ');
+    this.spotify.setAccessToken('BQANgA8idyh3qvXOSlX30qv2RBwvUreBkf9dva0mL_0_v3Y4VthfHvnRhimdf-2jfl7cyh0UuNkPC9exjgjIp3xbUSPRy71nfJXEDgsVVxSPYud7WDuZxLI2-jxtYfxEruHu1EolYCQcmhmPG1Vgqm61gzz86TFrYiFa-JTcpo61vV2Mv2cqHo_SjtMV28GvAJGf0q5WfuYUNGiTJzxyzqR0kq0YyWr07BScWeiuI8Gc-9Hg_7KjWDW2QMn8aeKTMuOqOFOBAQ');
     this.upVoteSong = this.upVoteSong.bind(this)
-
-
+    firebase.initializeApp({
+      apiKey: 'AIzaSyCOcFRsrjB3Nywt2NhOaBzktEKlw9oQw3U',
+      projectId: 'spotify-rooms-47b2d'
+    });
+    this.db = firebase.firestore();
+    this.db.settings({timestampsInSnapshots: true});
   }
 
   toggleNavbar() {
@@ -48,29 +53,29 @@ class App extends Component {
 
 
     this.timer = setInterval(tick, 300);
+    
+    this.db.collection('/rooms/0/queue')
+      .onSnapshot((snapshot) => {
+        console.log(snapshot)
+        var songs = snapshot.docs.map((song) => {
+          console.log(song.ref)
+          return song.data()
+        })
+        console.log(songs);
 
-
-
-    this.spotify.getPlaylist('ook42', '37i9dQZF1DX1YF6nTEHymi').then(data => {
-      var songs = data.tracks.items.map((song) => {
-        return {
-          votes:1,
-          voted:false,
-          spotify:song
-        }
+        this.setState({songs,currentSong:songs[3].track})  
+        this.playSongs()
+        console.log(songs)
+      },(err) => {
+        console.log(err)
       })
+      
 
 
-      songs[7].votes = 2
-      var songs = this.sortQue(songs)
-      console.log(this.sortQue(songs))
-      this.setState({songs,currentSong:songs[3].spotify.track})
-      this.playSongs()
-    });
   }
 
   playSongs(){
-    var track = this.state.songs[0].spotify.track;
+    var track = this.state.songs[0].track;
 
 
     this.spotify.play({
@@ -91,7 +96,7 @@ class App extends Component {
         this.setState({currentSong:track,songs})
         setTimeout(() => {
           this.playSongs()
-        },track.duration_ms - 1000 );
+        }, 10000 );
       }
     })
   }

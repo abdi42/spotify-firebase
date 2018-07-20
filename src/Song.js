@@ -19,13 +19,13 @@ class App extends Component {
           <Row>
             <Badge className="thumbnail-badge">{this.props.song.votes}</Badge>
             <Col xs="2" className="thumbnail" >
-              <img src={this.props.song.spotify.track.album.images[2].url} alt=""/>
+              <img src={this.props.song.track.album.images[2].url} alt=""/>
             </Col>
             <Col xs="8">
               <div className='song-container'>
                 <div className="song">
-                  <p className="song-title">{this.props.song.spotify.track.name}</p>
-                  <p className="subdue">{this.props.song.spotify.track.artists[0].name}</p>
+                  <p className="song-title">{this.props.song.track.name}</p>
+                  <p className="subdue">{this.props.song.track.artists[0].name}</p>
                 </div>
               </div>
             </Col>
